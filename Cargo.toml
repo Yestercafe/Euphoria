@@ -6,3 +6,4 @@ author = "Ivan Chien <qyc027@gmail.com>"
 
 [dependencies]
 clap = { version = "4.2.2", features = ["derive"] }
+glob = "0.3.1"
