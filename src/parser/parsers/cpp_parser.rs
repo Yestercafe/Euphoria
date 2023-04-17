@@ -1,111 +1,268 @@
 use crate::parser::components::desc::Desc;
 use crate::parser::components::param::Param;
 use crate::parser::components::returns::Returns;
+use crate::parser::lang::member::Member;
 use crate::parser::lang::method::Method;
-use crate::parser::parsers::cpp_parser::Status::Whatever;
+use crate::parser::lang::r#enum::Enum;
 
 pub struct CppParser {
     text: Vec<String>,
+    source_path: String,
 }
 
-#[derive(Eq, PartialEq, Debug)]
-enum Status {
-    Desc,
-    ReturnsDesc,
-    ParamDesc,
-    Signature,
-    Comment,
-    Whatever,
+pub struct Parsed {
+    pub members: Vec<Member>,
+    pub methods: Vec<Method>,
+    pub enums: Vec<Enum>,
+}
+
+impl Parsed {
+    pub fn new() -> Self {
+        Self {
+            members: vec![],
+            methods: vec![],
+            enums: vec![],
+        }
+    }
 }
 
 impl CppParser {
-    pub fn new(text: Vec<String>) -> Self {
-        Self { text }
+    pub fn new(text: Vec<String>, source_path: String) -> Self {
+        Self {
+            text,
+            source_path,
+        }
     }
 
-    pub fn parse(self) -> Vec<Method> {
-        let mut methods: Vec<Method> = vec![];
-        let mut this_method = Method::new();
-        let mut desc: String = String::new();
-        let mut status = Status::Whatever;
+    pub fn parse(&self) -> Parsed {
+        let mut parsed = Parsed::new();
+        let mut i = 0usize;
 
-        for line in self.text {
-            // println!("parsing: {}, status: {:?}", line, status);
-            match status {
-                Status::Signature => {
-                    this_method.signature = Some(line);
-                    methods.push(this_method);
-                    this_method = Method::new();
-                    status = Whatever;
-                    continue;
-                }
-                _ => {}
-            }
+        while i < self.text.len() {
+            // Find beginning of Euphoria docs
+            println!("[{}]: {}", i, self.text[i].trim());
+            if self.text[i] == "/**" {
+                i += 1;
 
-            if line == "/**" {
-                status = Status::Comment;
-            } else if line.trim() == "*/" {
-                status = Status::Signature;
-            } else if line.starts_with(" *") {
-                let mut line = line.clone().split_off(3.min(line.len()));
-                if line.starts_with("@") {
-                    if line.starts_with("@desc") || line.starts_with("@description") {
-                        status = Status::Desc;
-                    } else if line.starts_with("@param") || line.starts_with("@parameter") {
-                        let mut param = Param::new();
-                        let sp: Vec<&str> = line.split_whitespace().collect();
-                        if sp.len() == 2 {
-                            param.name = Some(sp[1].to_string());
+                // detect type
+                if self.text[i].starts_with("* ") {
+                    let mut line = self.text[i].clone().split_off(2);
+
+                    // type identifier
+                    if line.starts_with("%") {
+                        match line.as_str() {
+                            "%member" => {
+                                let (next_i, new_member) = self.parse_member(i + 1);
+                                parsed.members.push(new_member);
+                                i = next_i - 1;
+                            }
+                            "%method" => {
+                                let (next_i, new_method) = self.parse_method(i + 1);
+                                parsed.methods.push(new_method);
+                                i = next_i - 1;
+                            }
+                            // TODO: more, for example: enum
+                            _ => {
+                                // panic!("PARSER_ERROR: At line {} in source file {}, type `{}` is not supported.", i + 1, self.source_path, line);
+                            }
                         }
-                        this_method.params.push(param);
-                        status = Status::ParamDesc;
-                    } else if line.starts_with("@return") || line.starts_with("@returns") {
-                        status = Status::ReturnsDesc;
+                    } else {
+                        // TODO: parse any, convert to specific type at last
                     }
-                } else if line.trim().len() == 0 {
-                    continue;
                 } else {
-                    match status {
-                        Status::Desc => {
-                            if let Some(desc) = this_method.desc {
-                                let mut desc = desc.clone();
-                                desc.description.push('\n');
-                                desc.description.push_str(line.as_str());
-                                this_method.desc = Some(desc);
-                            } else {
-                                this_method.desc = Some(Desc::new(line));
-                            }
-                        }
-                        Status::ReturnsDesc => {
-                            if let Some(returns) = this_method.returns {
-                                let mut returns = returns.clone();
-                                returns.description.push('\n');
-                                returns.description.push_str(line.as_str());
-                                this_method.returns = Some(returns);
-                            } else {
-                                this_method.returns = Some(Returns::new(line));
-                            }
-                        }
-                        Status::ParamDesc => {
-                            let mut last_param = this_method.params.pop().unwrap();
-                            if let Some(desc) = last_param.description {
-                                let mut desc = desc.clone();
-                                desc.push('\n');
-                                desc.push_str(line.as_str());
-                                last_param.description = Some(desc);
-                            } else {
-                                last_param.description = Some(line);
-                            }
-                            this_method.params.push(last_param);
-                        }
-                        _ => {}
-                    }
+                    // TODO: curious part in docs, may do some process or panic?
                 }
             }
+            i += 1;
         }
 
-        println!("methods length: {}", methods.len());
+        parsed
+    }
 
-        methods
+    fn parse_member(&self, i: usize) -> (usize, Member) {
+        let mut i = i;
+        let mut this_member = Member::new();
+
+        // Euphoria docs part
+        while i < self.text.len() {
+            // the end of docs
+            if self.text[i] == "*/" {
+                i += 1;
+                break;
+            }
+
+            if self.text[i].starts_with("* ") {
+                let line = self.text[i].clone().split_off(2);
+
+                if line.starts_with("@") {
+                    let sp: Vec<&str> = line.split_whitespace().collect();
+                    let car = sp.first().unwrap();
+
+                    match *car {
+                        "@desc" | "@description" => {
+                            let (next_i, desc) = self.get_desc(i + 1);
+                            this_member.desc = Some(desc);
+                            // next_i is the next line of the desc, -1 here, and +1 later,
+                            // can be back to the right point
+                            i = next_i - 1;
+                        }
+                        _ => {
+                            self.panic_at_i(i);
+                        }
+                    }
+                } else {
+                    self.panic_at_i(i);
+                }
+            } else {
+                // TODO: curious part in docs, may do some process or panic?
+            }
+
+            i += 1;
+        }
+
+        // UPROPERTY part
+        self.assert_i(i);
+        if self.text[i].trim().starts_with("UPROPERTY") {
+            this_member.has_uproperty = true;
+            // TODO: record it has which properties
+            i += 1;
+        }
+
+        // declare part
+        self.assert_i(i);
+        this_member.declare = Some(self.text[i].clone());
+        i += 1;
+
+        (i, this_member)
+    }
+
+    fn parse_method(&self, i: usize) -> (usize, Method) {
+        let mut i = i;
+        let mut this_method = Method::new();
+
+        while i < self.text.len() {
+            // the end of docs
+            if self.text[i] == "*/" {
+                i += 1;
+                break;
+            }
+
+            if self.text[i].starts_with("* ") {
+                let line = self.text[i].clone().split_off(2);
+
+                // component
+                if line.starts_with("@") {
+                    // sp is the argument list of component
+                    let sp: Vec<&str> = line.split_whitespace().collect();
+                    let car = sp.first().unwrap();
+
+                    match *car {
+                        "@desc" | "@description" => {
+                            let (next_i, desc) = self.get_desc(i + 1);
+                            this_method.desc = Some(desc);
+                            i = next_i - 1;
+                        }
+                        "@returns" | "@return" => {
+                            let (next_i, returns) = self.get_returns(i + 1);
+                            this_method.returns = Some(returns);
+                            i = next_i - 1;
+                        }
+                        "@param" | "@parameter" => {
+                            let (next_i, mut param) = self.get_param(i + 1);
+                            if sp.len() >= 2 {
+                                param.name = Some(sp[1].to_string());
+                            }
+                            this_method.params.push(param);
+                            i = next_i - 1;
+                        }
+                        _ => {
+                            self.panic_at_i(i);
+                        }
+                    }
+                } else {
+                    self.panic_at_i(i);
+                }
+            } else {
+                // TODO: curious part in docs, may do some process or panic?
+            }
+
+            i += 1;
+        }
+
+        // signature of the method
+        self.assert_i(i);
+
+        i += 1;
+
+        (i, this_method)
+    }
+
+    fn assert_i(&self, i: usize) {
+        if i >= self.text.len() {
+            self.panic_at_i(i);
+        }
+    }
+
+    fn panic_at_i(&self, i: usize) {
+        let mut panic_info = format!("PARSER_ERROR: At line {} in source file {}: \n", i + 1, self.source_path);
+        let from = 2.max(i) - 2;
+        let to = self.text.len().min(i + 3);
+        panic_info.push_str("----------\n");
+        for ii in from..i {
+            panic_info.push_str(format!("    {}\n", self.text[ii]).as_str());
+        }
+        panic_info.push_str(format!(" => {}\n", self.text[i]).as_str());
+        for ii in i+1..to {
+            panic_info.push_str(format!("    {}\n", self.text[ii]).as_str());
+        }
+        panic_info.push_str("----------\n");
+        panic!("{}", panic_info);
+    }
+
+    fn get_desc(&self, i: usize) -> (usize, Desc) {
+        let mut i = i;
+        let mut this_desc = Desc::new(String::new());
+
+        while i < self.text.len() {
+            if self.text[i] == "*/" {
+                break;
+            }
+
+            if self.text[i].starts_with("* ") {
+                let mut line = self.text[i].clone().split_off(2);
+
+                // if next components
+                if line.starts_with("@") {
+                    break;
+                }
+
+                // if be a line of the desc
+                if !this_desc.description.is_empty() { this_desc.description.push('\n'); }
+                // TODO: all line trimmed here, may support indents and formats
+                this_desc.description.push_str(line.trim());
+            } else {
+                // TODO: curious part in docs, may do some process or panic?
+            }
+
+            i += 1;
+        }
+
+        this_desc.description = this_desc.description.trim().to_string();
+
+        (i, this_desc)
+    }
+
+    fn get_returns(&self, i: usize) -> (usize, Returns) {
+        let (next_i, desc) = self.get_desc(i);
+        let mut this_returns = Returns::new();
+        this_returns.desc = Some(desc);
+        (next_i, this_returns)
+    }
+
+    fn get_param(&self, i: usize) -> (usize, Param) {
+        let (next_i, desc) = self.get_desc(i);
+        let mut this_param = Param::new();
+        this_param.desc = Some(desc);
+        (next_i, this_param)
     }
 }

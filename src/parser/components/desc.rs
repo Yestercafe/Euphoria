@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Desc {
     pub description: String,
 }

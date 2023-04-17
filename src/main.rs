@@ -15,18 +15,18 @@ use glob::{glob, GlobResult};
 #[command(about = "Euphoria Docs Generator", long_about = None)]
 struct Args {
     #[arg(short, long)]
-    language: String,
+    source: String,
 
     #[arg(short, long)]
-    path: String,
+    destination: String,
 }
 
 fn main() {
     let args: Args = Args::parse();
 
-    println!("lang = {}, path = {}", args.language, args.path);
+    println!("source = {}, destination = {}", args.source, args.destination);
 
-    let root = glob(args.path.as_str()).expect("Failed to read glob pattern");
+    let root = glob(args.source.as_str()).expect("Failed to read glob pattern");
     let root: Vec<GlobResult> = root.collect();
     if root.len() == 0 {
         println!("Dir doesn\'t exist.");
@@ -34,7 +34,7 @@ fn main() {
     }
     let root = root[0].as_ref().unwrap().display().to_string();
 
-    let mut matches = args.path;
+    let mut matches = args.source;
     matches.push_str("/**/*");
 
     let mut files: Vec<String> = vec![];

@@ -1,11 +1,11 @@
 use crate::parser::components::desc::Desc;
 
-pub struct Class {
+pub struct Enum {
     pub desc: Option<Desc>,
     pub name: Option<String>,
 }
 
-impl Class {
+impl Enum {
     pub fn new() -> Self {
         Self {
             desc: None,
