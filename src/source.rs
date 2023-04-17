@@ -13,4 +13,13 @@ impl Source {
             path,
         }
     }
+    pub fn filename(&self) -> &str {
+        &self.filename
+    }
+    pub fn ext(&self) -> &str {
+        &self.ext
+    }
+    pub fn path(&self) -> &str {
+        &self.path
+    }
 }

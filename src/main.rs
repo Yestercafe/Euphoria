@@ -3,6 +3,8 @@ mod source;
 mod sh_pair;
 mod doc;
 mod parser;
+mod html_helper;
+mod md_helper;
 
 use clap::Parser;
 use glob::{glob, GlobResult};
