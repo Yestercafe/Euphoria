@@ -1,11 +1,26 @@
 # Euphoria
 Euphoria UE C++ docs generator
 
+## To-do List
+
+目前在使用 DFA 解析文件，但是没有对抽象出自动机。之后引入嵌套类后可能要改用带状态的自动机，这时候视情况要不要把封装起来（其实是取决于我想不想）。
+
+- [x] Parser 功能可用
+  - [x] 支持类成员
+  - [x] 支持方法
+  - [ ] 支持类内部枚举类型
+  - [ ] 支持成员的访问限制分析
+  - [ ] 支持内部类
+  - [ ] 分析变量类型、默认值
+  - [ ] 分析方法返回值类型
+- [ ] 生成 Markdown 功能可用
+- [ ] 生成 HTML 功能可用
+
 ## 使用
 
 目前 Euphoria 的解析力较弱，对注释格式有强要求。
 
-目前仅支持对 `.cpp` 文件的文档生成，`.h` 的稍候。
+目前仅支持对 UE C++ 要求格式的 `.h` 文件进行分析。
 
 在使用 UE 要求的 C++ 格式的基础上，在成员函数的定义（在 `.cpp` 文件中）上面定义 Euphoria 文档注释。
 
@@ -39,3 +54,5 @@ double UPoint::Distance(UPoint* rhs)
     return std::hypot(this->x - rhs->x, this->y - rhs->y);
 }
 ```
+
+示例文件 [header.h](cpp_tests/header.h)。
