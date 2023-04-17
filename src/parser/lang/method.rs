@@ -1,7 +1,7 @@
-use std::fmt::{Debug, format, Formatter, Write};
 use crate::parser::components::desc::Desc;
 use crate::parser::components::param::Param;
 use crate::parser::components::returns::Returns;
+use std::fmt::{format, Debug, Formatter, Write};
 
 #[derive(Clone)]
 pub struct Method {

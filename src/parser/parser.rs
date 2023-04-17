@@ -5,9 +5,6 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(text: String, ext: String) -> Self {
-        Self {
-            text,
-            ext,
-        }
+        Self { text, ext }
     }
 }

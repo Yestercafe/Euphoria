@@ -8,4 +8,3 @@ impl Returns {
         Self { description }
     }
 }
-

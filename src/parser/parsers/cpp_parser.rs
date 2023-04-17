@@ -20,9 +20,7 @@ enum Status {
 
 impl CppParser {
     pub fn new(text: Vec<String>) -> Self {
-        Self {
-            text,
-        }
+        Self { text }
     }
 
     pub fn parse(self) -> Vec<Method> {

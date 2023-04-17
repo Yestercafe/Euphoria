@@ -1,14 +1,14 @@
-mod generator;
-mod source;
-mod sh_pair;
 mod doc;
-mod parser;
+mod generator;
 mod html_helper;
 mod md_helper;
+mod parser;
+mod sh_pair;
+mod source;
 
+use crate::generator::Generator;
 use clap::Parser;
 use glob::{glob, GlobResult};
-use crate::generator::Generator;
 
 #[derive(Parser, Debug)]
 #[command(author, version)]
@@ -37,7 +37,7 @@ fn main() {
     let mut matches = args.path;
     matches.push_str("/**/*");
 
-    let mut files : Vec<String> = vec![];
+    let mut files: Vec<String> = vec![];
 
     for e in glob(matches.as_str()).expect("Failed to read glob pattern") {
         let filename: String = e.as_ref().unwrap().display().to_string();

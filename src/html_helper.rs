@@ -1,7 +1,3 @@
 pub struct HtmlHelper {}
 
-impl HtmlHelper {
-
-
-
-}
+impl HtmlHelper {}

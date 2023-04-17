@@ -23,6 +23,9 @@ impl Debug for Param {
 
 impl Param {
     pub fn new() -> Self {
-        Self { name: None, description: None }
+        Self {
+            name: None,
+            description: None,
+        }
     }
 }

@@ -1,8 +1,8 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use crate::parser::lang::method::Method;
 use crate::parser::parsers::cpp_parser::CppParser;
 use crate::sh_pair::SHPair;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct Doc {
     doc_name: String,
@@ -11,10 +11,7 @@ pub struct Doc {
 
 impl Doc {
     pub fn new(doc_name: String, sh_pair: SHPair) -> Self {
-        Self {
-            doc_name,
-            sh_pair,
-        }
+        Self { doc_name, sh_pair }
     }
 
     pub fn generate(self) {
@@ -37,8 +34,6 @@ impl Doc {
     }
 
     fn write_out_methods(methods: Vec<Method>) {
-        for method in methods {
-
-        }
+        for method in methods {}
     }
 }

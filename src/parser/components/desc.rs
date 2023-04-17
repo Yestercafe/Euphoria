@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub struct Desc {
-    pub description: String
+    pub description: String,
 }
 
 impl Desc {
