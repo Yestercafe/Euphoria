@@ -40,7 +40,6 @@ impl CppParser {
 
         while i < self.text.len() {
             // Find beginning of Euphoria docs
-            println!("[{}]: {}", i, self.text[i].trim());
             if self.text[i] == "/**" {
                 i += 1;
 
@@ -156,8 +155,8 @@ impl CppParser {
                     let sp: Vec<&str> = line.split_whitespace().collect();
                     let car = sp.first().unwrap();
 
-                    match *car {
-                        "@desc" | "@description" => {
+                    match *car{
+                        "@desc" | "@description" | "@brief" => {
                             let (next_i, desc) = self.get_desc(i + 1);
                             this_method.desc = Some(desc);
                             i = next_i - 1;

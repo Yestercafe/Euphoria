@@ -1,0 +1,60 @@
+/* global */
+
+* {
+    font-size: 16px;
+}
+
+.container {
+    display: block;
+    margin: 0 auto;
+    max-width: 1000px;
+    width: 80%;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+}
+
+.heading1 {
+    font-size: 3rem;
+}
+
+.heading2 {
+    font-size: 2.5rem;
+}
+
+.heading3 {
+    font-size: 2rem;
+}
+
+.heading4 {
+    font-size: 1.5rem;
+}
+
+code {
+    font-size: 14px;
+    font-family: "Fira Code", meslo, monaco, "Cascadia Code", consolas, monospace;
+}
+
+/* member items */
+
+.member-item-container {
+    margin-bottom: 2rem;
+}
+
+.member-declare-container {
+    background: lightgray;
+    padding: 10px;
+}
+
+.member-uproperty {
+    font-weight: 1000;
+}
+
+.member-desc-container {
+}
+
+.member-desc {
+}
+
+

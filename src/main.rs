@@ -6,6 +6,7 @@ mod parser;
 mod sh_pair;
 mod source;
 
+use std::alloc::dealloc;
 use crate::generator::Generator;
 use clap::Parser;
 use glob::{glob, GlobResult};
@@ -29,7 +30,7 @@ fn main() {
     let root = glob(args.source.as_str()).expect("Failed to read glob pattern");
     let root: Vec<GlobResult> = root.collect();
     if root.len() == 0 {
-        println!("Dir doesn\'t exist.");
+        println!("Source dir doesn\'t exist.");
         return;
     }
     let root = root[0].as_ref().unwrap().display().to_string();
@@ -46,6 +47,6 @@ fn main() {
         }
     }
 
-    let generator = Generator::new(root, files);
+    let generator = Generator::new(root, args.destination, files);
     generator.generate();
 }
