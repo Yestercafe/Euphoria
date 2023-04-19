@@ -6,10 +6,10 @@ mod parser;
 mod sh_pair;
 mod source;
 
-use std::alloc::dealloc;
 use crate::generator::Generator;
 use clap::Parser;
 use glob::{glob, GlobResult};
+use std::alloc::dealloc;
 
 #[derive(Parser, Debug)]
 #[command(author, version)]
@@ -25,7 +25,10 @@ struct Args {
 fn main() {
     let args: Args = Args::parse();
 
-    println!("source = {}, destination = {}", args.source, args.destination);
+    println!(
+        "source = {}, destination = {}",
+        args.source, args.destination
+    );
 
     let root = glob(args.source.as_str()).expect("Failed to read glob pattern");
     let root: Vec<GlobResult> = root.collect();

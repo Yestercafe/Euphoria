@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Formatter};
 use crate::parser::components::desc::Desc;
+use std::fmt::{Debug, Formatter};
 
 pub struct Member {
     pub desc: Option<Desc>,

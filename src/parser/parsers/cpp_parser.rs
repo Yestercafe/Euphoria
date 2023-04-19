@@ -28,10 +28,7 @@ impl Parsed {
 
 impl CppParser {
     pub fn new(text: Vec<String>, source_path: String) -> Self {
-        Self {
-            text,
-            source_path,
-        }
+        Self { text, source_path }
     }
 
     pub fn parse(&self) -> Parsed {
@@ -155,7 +152,7 @@ impl CppParser {
                     let sp: Vec<&str> = line.split_whitespace().collect();
                     let car = sp.first().unwrap();
 
-                    match *car{
+                    match *car {
                         "@desc" | "@description" | "@brief" => {
                             let (next_i, desc) = self.get_desc(i + 1);
                             this_method.desc = Some(desc);
@@ -203,7 +200,11 @@ impl CppParser {
     }
 
     fn panic_at_i(&self, i: usize) {
-        let mut panic_info = format!("PARSER_ERROR: At line {} in source file {}: \n", i + 1, self.source_path);
+        let mut panic_info = format!(
+            "PARSER_ERROR: At line {} in source file {}: \n",
+            i + 1,
+            self.source_path
+        );
         let from = 2.max(i) - 2;
         let to = self.text.len().min(i + 3);
         panic_info.push_str("----------\n");
@@ -211,7 +212,7 @@ impl CppParser {
             panic_info.push_str(format!("    {}\n", self.text[ii]).as_str());
         }
         panic_info.push_str(format!(" => {}\n", self.text[i]).as_str());
-        for ii in i+1..to {
+        for ii in i + 1..to {
             panic_info.push_str(format!("    {}\n", self.text[ii]).as_str());
         }
         panic_info.push_str("----------\n");
@@ -236,7 +237,9 @@ impl CppParser {
                 }
 
                 // if be a line of the desc
-                if !this_desc.description.is_empty() { this_desc.description.push('\n'); }
+                if !this_desc.description.is_empty() {
+                    this_desc.description.push('\n');
+                }
                 // TODO: all line trimmed here, may support indents and formats
                 this_desc.description.push_str(line.trim());
             } else {

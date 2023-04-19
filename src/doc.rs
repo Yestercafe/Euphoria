@@ -1,10 +1,10 @@
+use crate::html_helper::HtmlHelper;
 use crate::parser::lang::method::Method;
 use crate::parser::parsers::cpp_parser::{CppParser, Parsed};
 use crate::sh_pair::SHPair;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
-use crate::html_helper::HtmlHelper;
 
 pub struct Doc {
     doc_name: String,

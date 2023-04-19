@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Formatter, Write};
 use crate::parser::components::desc::Desc;
+use std::fmt::{Debug, Formatter, Write};
 
 #[derive(Clone)]
 pub struct Param {

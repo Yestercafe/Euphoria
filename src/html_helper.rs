@@ -5,7 +5,7 @@ pub struct HtmlHelper {}
 
 impl HtmlHelper {
     pub fn str_header() -> String {
-r#"<html>
+        r#"<html>
 
 <header>
 <link rel="stylesheet" href="euphoria.css">
@@ -13,24 +13,27 @@ r#"<html>
 
 <body>
 <div class="container">
-"#.to_string()
+"#
+        .to_string()
     }
 
     pub fn str_footer() -> String {
-r#"
+        r#"
 </div>
 </body>
 
 <footer>
 </footer>
 
-</html>"#.to_string()
+</html>"#
+            .to_string()
     }
 
     pub fn str_member_list() -> String {
-r#"
+        r#"
 <h2 class="heading2">Members</h2>
-"#.to_string()
+"#
+        .to_string()
     }
 
     pub fn gen_member(member: &Member) -> (String, String) {
@@ -52,9 +55,17 @@ r#"
         let mut member_str = String::new();
         member_str += format!("<div class=\"member-item-container\" id=\"{}\">", id).as_str();
         if let Some(declare) = &member.declare {
-            member_str += format!("<pre class=\"member-declare-container\"><code>{}</code></pre>\n", HtmlHelper::preprocess_source(declare.as_str())).as_str();
+            member_str += format!(
+                "<pre class=\"member-declare-container\"><code>{}</code></pre>\n",
+                HtmlHelper::preprocess_source(declare.as_str())
+            )
+            .as_str();
         }
-        member_str += format!("<p class=\"member-uproperty\">It is{} a UPROPERTY.</p>\n", if member.has_uproperty { "" } else { " not" }).as_str();
+        member_str += format!(
+            "<p class=\"member-uproperty\">It is{} a UPROPERTY.</p>\n",
+            if member.has_uproperty { "" } else { " not" }
+        )
+        .as_str();
         if let Some(desc) = &member.desc {
             member_str += r#"<div class="member-desc-container">"#;
             member_str += r#"<h3 class="heading3">Desc</h3>"#;
@@ -75,7 +86,8 @@ r#"
     pub fn str_method_list() -> String {
         r#"
 <h2 class="heading2">Methods</h2>
-"#.to_string()
+"#
+        .to_string()
     }
 
     pub fn gen_method(method: &Method) -> String {

@@ -1,11 +1,11 @@
 use crate::doc::Doc;
+use crate::html_helper::HtmlHelper;
 use crate::sh_pair::SHPair;
 use crate::source::Source;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use crate::html_helper::HtmlHelper;
 
 #[derive(Debug)]
 pub struct Generator {
@@ -19,7 +19,7 @@ impl Generator {
         Self {
             root,
             dest_path,
-            source_paths
+            source_paths,
         }
     }
 
@@ -52,24 +52,36 @@ impl Generator {
                 let mut doc_name = source_filename.clone();
                 let _ = doc_name.split_off(doc_name.len() - "cpp".len() - 1);
                 if let Some(sh_pair) = docs_map.get_mut(&doc_name) {
-                    sh_pair.source =
-                        Some(Source::new(source_filename, "cpp".to_string(), source_path.clone()));
+                    sh_pair.source = Some(Source::new(
+                        source_filename,
+                        "cpp".to_string(),
+                        source_path.clone(),
+                    ));
                 } else {
                     let mut new_sh_pair = SHPair::new();
-                    new_sh_pair.source =
-                        Some(Source::new(source_filename, "cpp".to_string(), source_path.clone()));
+                    new_sh_pair.source = Some(Source::new(
+                        source_filename,
+                        "cpp".to_string(),
+                        source_path.clone(),
+                    ));
                     docs_map.insert(doc_name.clone(), new_sh_pair);
                 }
             } else if file_ext == "h" {
                 let mut doc_name = source_filename.clone();
                 let _ = doc_name.split_off(doc_name.len() - "h".len() - 1);
                 if let Some(sh_pair) = docs_map.get_mut(&doc_name) {
-                    sh_pair.header =
-                        Some(Source::new(source_filename, "h".to_string(), source_path.clone()));
+                    sh_pair.header = Some(Source::new(
+                        source_filename,
+                        "h".to_string(),
+                        source_path.clone(),
+                    ));
                 } else {
                     let mut new_sh_pair = SHPair::new();
-                    new_sh_pair.header =
-                        Some(Source::new(source_filename, "h".to_string(), source_path.clone()));
+                    new_sh_pair.header = Some(Source::new(
+                        source_filename,
+                        "h".to_string(),
+                        source_path.clone(),
+                    ));
                     docs_map.insert(doc_name.clone(), new_sh_pair);
                 }
             }
@@ -90,7 +102,10 @@ impl Generator {
     fn generate_index(&self, docs_map: &HashMap<String, SHPair>) {
         let dest_path = Path::new(self.dest_path.as_str());
         if dest_path.exists() && dest_path.is_file() {
-            panic!("FS_ERROR: {} is a file, not a directory or doesn't exist.", self.dest_path);
+            panic!(
+                "FS_ERROR: {} is a file, not a directory or doesn't exist.",
+                self.dest_path
+            );
         } else if !dest_path.exists() {
             if let Err(_) = std::fs::create_dir_all(dest_path) {
                 panic!("FS_ERROR: can't create the directory {}", self.dest_path);
@@ -111,7 +126,9 @@ impl Generator {
             index_file.write(HtmlHelper::str_header().as_bytes());
 
             for (k, v) in docs_map.iter() {
-                index_file.write(HtmlHelper::gen_url((k.clone() + ".html").as_str(), k.as_str()).as_bytes());
+                index_file.write(
+                    HtmlHelper::gen_url((k.clone() + ".html").as_str(), k.as_str()).as_bytes(),
+                );
             }
 
             index_file.write(HtmlHelper::str_footer().as_bytes());
