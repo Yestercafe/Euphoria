@@ -1,1 +1,1 @@
-cp ./euphoria.css ../docs/euphoria.css
+cp ./euphoria.css ../testdocs/euphoria.css

@@ -68,7 +68,9 @@ impl Doc {
 
             doc_file.write(HtmlHelper::str_method_list().as_bytes());
             for method in &parsed.methods {
-                doc_file.write(HtmlHelper::gen_method(&method).as_bytes());
+                // TODO: use id to generate toc
+                let (method_str, _) = HtmlHelper::gen_method(&method);
+                doc_file.write(method_str.as_bytes());
             }
 
             doc_file.write(HtmlHelper::str_footer().as_bytes());

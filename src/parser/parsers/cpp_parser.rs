@@ -188,6 +188,15 @@ impl CppParser {
         // signature of the method
         self.assert_i(i);
 
+        if self.text[i].trim().starts_with("UFUNCTION") {
+            this_method.has_ufunction = true;
+            // TODO: record it has which properties
+            i += 1;
+        }
+
+        // declare part
+        self.assert_i(i);
+        this_method.signature = Some(self.text[i].clone());
         i += 1;
 
         (i, this_method)

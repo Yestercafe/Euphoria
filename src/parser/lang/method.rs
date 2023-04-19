@@ -8,6 +8,7 @@ pub struct Method {
     pub desc: Option<Desc>,
     pub returns: Option<Returns>,
     pub params: Vec<Param>,
+    pub has_ufunction: bool,
     pub signature: Option<String>,
 }
 
@@ -40,6 +41,7 @@ impl Method {
             signature: None,
             desc: None,
             returns: None,
+            has_ufunction: false,
             params: vec![],
         }
     }

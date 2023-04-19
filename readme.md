@@ -14,7 +14,7 @@ Euphoria UE C++ docs generator
   - [ ] 分析变量类型、默认值
   - [ ] 分析方法返回值类型
 - [ ] 生成 Markdown 功能可用
-- [ ] 生成 HTML 功能可用
+- [x] 生成 HTML 功能可用
 
 ## 使用
 

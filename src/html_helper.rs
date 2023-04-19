@@ -1,3 +1,4 @@
+use std::fmt::format;
 use crate::parser::lang::member::Member;
 use crate::parser::lang::method::Method;
 
@@ -38,6 +39,7 @@ impl HtmlHelper {
 
     pub fn gen_member(member: &Member) -> (String, String) {
         let mut id = String::new();
+        id += "v_";
         if let Some(declare) = &member.declare {
             for c in declare.chars() {
                 if c.is_alphanumeric() {
@@ -53,10 +55,10 @@ impl HtmlHelper {
         }
 
         let mut member_str = String::new();
-        member_str += format!("<div class=\"member-item-container\" id=\"{}\">", id).as_str();
+        member_str += format!("<div class=\"member-item-container\" id=\"{}\">\n", id).as_str();
         if let Some(declare) = &member.declare {
             member_str += format!(
-                "<pre class=\"member-declare-container\"><code>{}</code></pre>\n",
+                "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
                 HtmlHelper::preprocess_source(declare.as_str())
             )
             .as_str();
@@ -68,14 +70,11 @@ impl HtmlHelper {
         .as_str();
         if let Some(desc) = &member.desc {
             member_str += r#"<div class="member-desc-container">"#;
-            member_str += r#"<h3 class="heading3">Desc</h3>"#;
+            member_str += "\n";
 
-            let desc_splited_by_newline = &desc.description.clone();
-            let desc_splited_by_newline = desc_splited_by_newline.split("\n");
-            for line in desc_splited_by_newline {
-                member_str += format!("<p class=\"member-desc\">{}</p>", line).as_str();
-            }
+            member_str += HtmlHelper::preprocess_desc("member-desc", desc.description.as_str()).as_str();
             member_str += r#"</div>"#;
+            member_str += "\n";
         }
         member_str += r#"</div>"#;
         member_str += "\n\n";
@@ -90,8 +89,89 @@ impl HtmlHelper {
         .to_string()
     }
 
-    pub fn gen_method(method: &Method) -> String {
-        format!("<p>method: {:?}</p>", method)
+    pub fn gen_method(method: &Method) -> (String, String) {
+        let mut id = String::new();
+        id += "f_";
+        if let Some(signature) = &method.signature {
+            for c in signature.chars() {
+                if c.is_alphanumeric() {
+                    id.push(c);
+                } else if c == '_' {
+                    id.push('-');
+                } else if c == ' ' || c == '<' || c == '>' {
+                    id.push('_');
+                }
+            }
+        } else {
+            id = uuid::Uuid::new_v4().to_string();
+        }
+
+        let mut method_str = String::new();
+        method_str += format!("<div id=\"{}\" class=\"method-item-container\">", id).as_str();
+        method_str += "\n";
+
+        if let Some(signature) = &method.signature {
+            method_str += format!("<pre class=\"method-signature-container\">\n<code>{}</code>\n</pre>", HtmlHelper::preprocess_source(signature)).as_str();
+        }
+
+        method_str += format!(
+            "<p class=\"method-ufunction\">It is{} a UFUNCTION.</p>\n",
+            if method.has_ufunction { "" } else { " not" }
+        ).as_str();
+
+        if let Some(desc) = &method.desc {
+            method_str += r#"<div class="method-desc-container">"#;
+            method_str += "\n";
+
+            method_str += HtmlHelper::preprocess_desc("method-desc", desc.description.as_str()).as_str();
+            method_str += r#"</div>"#;
+            method_str += "\n";
+        }
+
+        if let Some(returns) = &method.returns {
+            method_str += "<h4 class=\"heading4\">returns</h4>\n";
+            if let Some(returns_desc) = &returns.desc {
+                method_str += HtmlHelper::preprocess_desc("method-desc", returns_desc.description.as_str()).as_str();
+            }
+        }
+
+        if method.params.len() > 0 {
+            method_str += "<h4 class=\"heading4\">params</h4>\n";
+            method_str += "<table><tbody>\n";
+            for param in &method.params {
+                method_str += "<tr>\n";
+
+                // param name
+                method_str += "<td>";
+                if let Some(param_name) = &param.name {
+                    method_str += param_name.as_str();
+                } else {
+                    method_str += "MISSING_PARAM_NAME";
+                }
+                method_str += "</td>\n";
+
+                // param desc
+                method_str += "<td>";
+                if let Some(param_desc) = &param.desc {
+                    if param_desc.description.as_str().len() == 0 {
+                        method_str += "MISSING_PARAM_DESC";
+                    } else {
+                        method_str += HtmlHelper::preprocess_desc("", param_desc.description.as_str()).as_str();
+                    }
+                } else {
+                    // never enter?
+                    method_str += "MISSING_PARAM_DESC";
+                }
+                method_str += "</td>\n";
+
+                method_str += "</tr>\n";
+            }
+            method_str += "</tbody></table>\n";
+        }
+
+        method_str += "</div>\n";
+
+        (method_str, id)
     }
 
     pub fn gen_url(url: &str, content: &str) -> String {
@@ -111,6 +191,16 @@ impl HtmlHelper {
             } else {
                 ret.push(c);
             }
+        }
+        ret
+    }
+
+    fn preprocess_desc(class_name: &str, text: &str) -> String {
+        let desc_splited_by_newline = text.to_string();
+        let desc_splited_by_newline = desc_splited_by_newline.split("\n");
+        let mut ret = String::new();
+        for line in desc_splited_by_newline {
+            ret += format!("<p class=\"{}\">{}</p>\n", class_name, line).as_str();
         }
         ret
     }
