@@ -1,5 +1,16 @@
 # Euphoria
+
 Euphoria UE C++ docs generator
+
+## 相关
+
+使用了 Euphoria 的项目：
+
+- [Lazarus-glhf/WhatCubes](https://github.com/Lazarus-glhf/WhatCubes)
+
+## GitHub Actions
+
+使用 GitHub Actions 持续集成 Euphoria 文档可参考：<https://github.com/Lazarus-glhf/WhatCubes/blob/master/.github/workflows/docs-ci.yml>
 
 ## To-do List
 
@@ -54,5 +65,3 @@ double UPoint::Distance(UPoint* rhs)
     return std::hypot(this->x - rhs->x, this->y - rhs->y);
 }
 ```
-
-示例文件 [header.h](cpp_tests/header.h)。
