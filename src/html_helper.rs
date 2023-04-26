@@ -1,7 +1,7 @@
-use std::fmt::format;
-use std::ops::Deref;
 use crate::parser::lang::member::Member;
 use crate::parser::lang::method::Method;
+use std::fmt::format;
+use std::ops::Deref;
 
 pub struct HtmlHelper {}
 
@@ -74,7 +74,18 @@ impl HtmlHelper {
             let trimmed_declare = declare.as_str().trim().trim_end_matches("{").trim();
             member_str += format!(
                 "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
-                HtmlHelper::preprocess_source((trimmed_declare.to_string() + if trimmed_declare.chars().collect::<Vec<char>>()[trimmed_declare.len() - 1] != ';' { ";" } else { "" }).as_str())
+                HtmlHelper::preprocess_source(
+                    (trimmed_declare.to_string()
+                        + if trimmed_declare.chars().collect::<Vec<char>>()
+                            [trimmed_declare.len() - 1]
+                            != ';'
+                        {
+                            ";"
+                        } else {
+                            ""
+                        })
+                    .as_str()
+                )
             )
             .as_str();
         }
@@ -87,13 +98,13 @@ impl HtmlHelper {
             member_str += r#"<div class="member-desc-container">"#;
             member_str += "\n";
 
-            member_str += HtmlHelper::preprocess_desc("member-desc", desc.description.as_str()).as_str();
+            member_str +=
+                HtmlHelper::preprocess_desc("member-desc", desc.description.as_str()).as_str();
             member_str += r#"</div>"#;
             member_str += "\n";
         }
         member_str += r#"</div>"#;
         member_str += "\n\n";
-
 
         (member_str, id)
     }
@@ -103,7 +114,7 @@ impl HtmlHelper {
         r#"
 <h2 class="heading2">Methods</h2>
 "#
-            .to_string()
+        .to_string()
     }
 
     pub fn gen_method(method: &Method, toc: &mut String) -> (String, String) {
@@ -136,19 +147,25 @@ impl HtmlHelper {
         method_str += "\n";
 
         if let Some(signature) = &method.signature {
-            method_str += format!("<pre class=\"method-signature-container\">\n<code>{}</code>\n</pre>", HtmlHelper::preprocess_source(signature)).as_str();
+            method_str += format!(
+                "<pre class=\"method-signature-container\">\n<code>{}</code>\n</pre>",
+                HtmlHelper::preprocess_source(signature)
+            )
+            .as_str();
         }
 
         method_str += format!(
             "<p class=\"method-ufunction\">It is{} a UFUNCTION.</p>\n",
             if method.has_ufunction { "" } else { " not" }
-        ).as_str();
+        )
+        .as_str();
 
         if let Some(desc) = &method.desc {
             method_str += r#"<div class="method-desc-container">"#;
             method_str += "\n";
 
-            method_str += HtmlHelper::preprocess_desc("method-desc", desc.description.as_str()).as_str();
+            method_str +=
+                HtmlHelper::preprocess_desc("method-desc", desc.description.as_str()).as_str();
             method_str += r#"</div>"#;
             method_str += "\n";
         }
@@ -157,12 +174,18 @@ impl HtmlHelper {
             method_str += "<h4 class=\"heading4\">returns</h4>\n";
             if let Some(returns_desc) = &returns.desc {
                 if returns_desc.description.len() > 0 {
-                    method_str += HtmlHelper::preprocess_desc("method-desc", returns_desc.description.as_str()).as_str();
+                    method_str += HtmlHelper::preprocess_desc(
+                        "method-desc",
+                        returns_desc.description.as_str(),
+                    )
+                    .as_str();
                 } else {
-                    method_str += HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
+                    method_str +=
+                        HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
                 }
             } else {
-                method_str += HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
+                method_str +=
+                    HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
             }
         }
 
@@ -193,7 +216,9 @@ impl HtmlHelper {
                     if param_desc.description.as_str().len() == 0 {
                         method_str += "MISSING_PARAM_DESC";
                     } else {
-                        method_str += HtmlHelper::preprocess_desc("", param_desc.description.as_str()).as_str();
+                        method_str +=
+                            HtmlHelper::preprocess_desc("", param_desc.description.as_str())
+                                .as_str();
                     }
                 } else {
                     // never enter?

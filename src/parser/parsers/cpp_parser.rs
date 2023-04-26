@@ -130,7 +130,15 @@ impl CppParser {
         this_member.declare = Some(raw_declare.clone());
         i += 1;
         // parse member declaration into member name
-        let name = raw_declare.trim().trim_end_matches(";").trim_end_matches("{").trim().split_whitespace().last().unwrap().to_string();
+        let name = raw_declare
+            .trim()
+            .trim_end_matches(";")
+            .trim_end_matches("{")
+            .trim()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .to_string();
         this_member.name = Some(name);
 
         (i, this_member)
@@ -204,7 +212,13 @@ impl CppParser {
         i += 1;
 
         // parse method signature into method name
-        let name = raw_signature.trim().split("(").collect::<Vec<&str>>()[0].trim().split_whitespace().collect::<Vec<&str>>().last().unwrap().to_string();
+        let name = raw_signature.trim().split("(").collect::<Vec<&str>>()[0]
+            .trim()
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .last()
+            .unwrap()
+            .to_string();
         this_method.name = Some(name);
 
         (i, this_method)
