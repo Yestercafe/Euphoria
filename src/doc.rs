@@ -54,7 +54,9 @@ impl Doc {
         if let Err(_) = doc_file {
             panic!("FS_ERROR: cannot create file {}", doc_file_path);
         } else if let Ok(mut doc_file) = doc_file {
-            let header = HtmlHelper::str_header() + HtmlHelper::gen_heading(1, &self.doc_name).as_str();
+            let header = HtmlHelper::str_header()
+                + r#"<p><a href="./index.html">Back to index</a></p>"#
+                + HtmlHelper::gen_heading(1, &self.doc_name).as_str();
             let mut toc = r#"<h2 class="heading2">TOC</h2>"#.to_string();
             let mut content = String::new();
             let footer = HtmlHelper::str_footer();
