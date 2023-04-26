@@ -58,7 +58,7 @@ impl HtmlHelper {
             id = uuid::Uuid::new_v4().to_string();
             name_for_toc = id.clone();
         }
-        *toc += format!("<p><a href=\"#{}\">{}</a></p>", id, name_for_toc).as_str();
+        *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name_for_toc.as_str()).as_str();
 
         let mut member_str = String::new();
         member_str += format!("<div class=\"member-item-container\" id=\"{}\">\n", id).as_str();
@@ -116,7 +116,7 @@ impl HtmlHelper {
             id = uuid::Uuid::new_v4().to_string();
             name_for_toc = id.clone();
         }
-        *toc += format!("<p><a href=\"#{}\">{}</a></p>", id, name_for_toc).as_str();
+        *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name_for_toc.as_str()).as_str();
 
         let mut method_str = String::new();
         method_str += format!("<div id=\"{}\" class=\"method-item-container\">", id).as_str();
