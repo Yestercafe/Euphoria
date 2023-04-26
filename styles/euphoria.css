@@ -21,22 +21,22 @@ h1, h2, h3, h4, h5, h6 {
 
 .heading1 {
     font-size: 3rem;
-    margin: 10px 0;
+    margin: 12px 0;
 }
 
 .heading2 {
     font-size: 2.5rem;
-    margin: 8px 0;
+    margin: 10px 0;
 }
 
 .heading3 {
-    font-size: 2rem;
-    margin: 6px 0;
+    font-size: 1.8rem;
+    margin: 8px 0;
 }
 
 .heading4 {
-    font-size: 1.5rem;
-    margin: 4px 0;
+    font-size: 1.3rem;
+    margin: 6px 0;
 }
 
 code {
@@ -62,7 +62,7 @@ tr {
 
 .member-item-container,
 .method-item-container {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .member-declare-container,
