@@ -95,7 +95,7 @@ impl CppParser {
                     let car = sp.first().unwrap();
 
                     match *car {
-                        "@desc" | "@description" => {
+                        "@desc" | "@description" | "@brief" => {
                             let (next_i, desc) = self.get_desc(i + 1);
                             this_member.desc = Some(desc);
                             // next_i is the next line of the desc, -1 here, and +1 later,
