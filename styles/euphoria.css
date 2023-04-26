@@ -11,28 +11,32 @@
     width: 80%;
 }
 
-h1, h2, h3, h4, h5, h6, p, pre {
-    margin: 0;
+p, pre {
+    line-height: 12px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 16px 0;
 }
 
 .heading1 {
     font-size: 3rem;
-    margin-bottom: 10px;
+    margin: 10px 0;
 }
 
 .heading2 {
     font-size: 2.5rem;
-    margin-bottom: 8px;
+    margin: 8px 0;
 }
 
 .heading3 {
     font-size: 2rem;
-    margin-bottom: 6px;
+    margin: 6px 0;
 }
 
 .heading4 {
     font-size: 1.5rem;
-    margin-bottom: 4px;
+    margin: 4px 0;
 }
 
 code {
@@ -41,11 +45,11 @@ code {
 }
 
 table {
-    margin-top: 6px;
+    margin-top: 16px;
 }
 
 table, thead, tbody, tr, th, td {
-    border: 1px solid black;
+    border: 1px solid lightgrey;
     border-collapse: collapse;
     padding: 10px 20px;
 }
