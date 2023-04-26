@@ -1,4 +1,5 @@
 use std::fmt::format;
+use std::ops::Deref;
 use crate::parser::lang::member::Member;
 use crate::parser::lang::method::Method;
 
@@ -30,17 +31,20 @@ impl HtmlHelper {
             .to_string()
     }
 
-    pub fn str_member_list() -> String {
+    pub fn str_member_list(toc: &mut String) -> String {
+        *toc += r#"<h4 class="heading4">Members</h4>"#;
         r#"
 <h2 class="heading2">Members</h2>
 "#
         .to_string()
     }
 
-    pub fn gen_member(member: &Member) -> (String, String) {
+    pub fn gen_member(member: &Member, toc: &mut String) -> (String, String) {
         let mut id = String::new();
         id += "v_";
+        let mut name_for_toc = String::new();
         if let Some(declare) = &member.declare {
+            name_for_toc = declare.clone();
             for c in declare.chars() {
                 if c.is_alphanumeric() {
                     id.push(c);
@@ -52,7 +56,9 @@ impl HtmlHelper {
             }
         } else {
             id = uuid::Uuid::new_v4().to_string();
+            name_for_toc = id.clone();
         }
+        *toc += format!("<p><a href=\"#{}\">{}</a></p>", id, name_for_toc).as_str();
 
         let mut member_str = String::new();
         member_str += format!("<div class=\"member-item-container\" id=\"{}\">\n", id).as_str();
@@ -79,20 +85,24 @@ impl HtmlHelper {
         member_str += r#"</div>"#;
         member_str += "\n\n";
 
+
         (member_str, id)
     }
 
-    pub fn str_method_list() -> String {
+    pub fn str_method_list(toc: &mut String) -> String {
+        *toc += r#"<h4 class="heading4">Methods</h4>"#;
         r#"
 <h2 class="heading2">Methods</h2>
 "#
-        .to_string()
+            .to_string()
     }
 
-    pub fn gen_method(method: &Method) -> (String, String) {
+    pub fn gen_method(method: &Method, toc: &mut String) -> (String, String) {
         let mut id = String::new();
         id += "f_";
+        let mut name_for_toc = String::new();
         if let Some(signature) = &method.signature {
+            name_for_toc = signature.clone();
             for c in signature.chars() {
                 if c.is_alphanumeric() {
                     id.push(c);
@@ -104,7 +114,9 @@ impl HtmlHelper {
             }
         } else {
             id = uuid::Uuid::new_v4().to_string();
+            name_for_toc = id.clone();
         }
+        *toc += format!("<p><a href=\"#{}\">{}</a></p>", id, name_for_toc).as_str();
 
         let mut method_str = String::new();
         method_str += format!("<div id=\"{}\" class=\"method-item-container\">", id).as_str();
@@ -131,13 +143,25 @@ impl HtmlHelper {
         if let Some(returns) = &method.returns {
             method_str += "<h4 class=\"heading4\">returns</h4>\n";
             if let Some(returns_desc) = &returns.desc {
-                method_str += HtmlHelper::preprocess_desc("method-desc", returns_desc.description.as_str()).as_str();
+                if returns_desc.description.len() > 0 {
+                    method_str += HtmlHelper::preprocess_desc("method-desc", returns_desc.description.as_str()).as_str();
+                } else {
+                    method_str += HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
+                }
+            } else {
+                method_str += HtmlHelper::preprocess_desc("method-desc", "MISSING_RET_DESC").as_str();
             }
         }
 
         if method.params.len() > 0 {
             method_str += "<h4 class=\"heading4\">params</h4>\n";
-            method_str += "<table><tbody>\n";
+            method_str += "<center><table><tbody>\n";
+            method_str += r#"<thead>
+    <tr>
+        <th>Parameter Name</th>
+        <th style="width:80%">Description</th>
+    </tr>
+</thead>"#;
             for param in &method.params {
                 method_str += "<tr>\n";
 
@@ -166,7 +190,7 @@ impl HtmlHelper {
 
                 method_str += "</tr>\n";
             }
-            method_str += "</tbody></table>\n";
+            method_str += "</tbody></table></center>\n";
         }
 
         method_str += "</div>\n";

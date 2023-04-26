@@ -54,26 +54,30 @@ impl Doc {
         if let Err(_) = doc_file {
             panic!("FS_ERROR: cannot create file {}", doc_file_path);
         } else if let Ok(mut doc_file) = doc_file {
-            // TODO: handle exceptions
-            doc_file.write(HtmlHelper::str_header().as_bytes());
+            let header = HtmlHelper::str_header() + HtmlHelper::gen_heading(1, &self.doc_name).as_str();
+            let mut toc = r#"<h2 class="heading2">TOC</h2>"#.to_string();
+            let mut content = String::new();
+            let footer = HtmlHelper::str_footer();
 
-            doc_file.write(HtmlHelper::gen_heading(1, &self.doc_name).as_bytes());
-
-            doc_file.write(HtmlHelper::str_member_list().as_bytes());
+            content += HtmlHelper::str_member_list(&mut toc).as_str();
             for member in &parsed.members {
                 // TODO: use id to generate toc
-                let (member_str, _) = HtmlHelper::gen_member(&member);
-                doc_file.write(member_str.as_bytes());
+                let (member_str, _) = HtmlHelper::gen_member(&member, &mut toc);
+                content += member_str.as_str();
             }
 
-            doc_file.write(HtmlHelper::str_method_list().as_bytes());
+            content += HtmlHelper::str_method_list(&mut toc).as_str();
             for method in &parsed.methods {
                 // TODO: use id to generate toc
-                let (method_str, _) = HtmlHelper::gen_method(&method);
-                doc_file.write(method_str.as_bytes());
+                let (method_str, _) = HtmlHelper::gen_method(&method, &mut toc);
+                content += method_str.as_str();
             }
 
-            doc_file.write(HtmlHelper::str_footer().as_bytes());
+            // TODO: handle exceptions
+            doc_file.write(header.as_bytes()).unwrap();
+            doc_file.write(toc.as_bytes()).unwrap();
+            doc_file.write(content.as_bytes()).unwrap();
+            doc_file.write(footer.as_bytes()).unwrap();
         }
     }
 }

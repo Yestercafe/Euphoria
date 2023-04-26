@@ -44,10 +44,14 @@ table {
     margin-top: 6px;
 }
 
-table, th, td {
+table, thead, tbody, tr, th, td {
     border: 1px solid black;
     border-collapse: collapse;
     padding: 10px 20px;
+}
+
+tr {
+    text-align: left;
 }
 
 /* member items */
