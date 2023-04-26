@@ -32,7 +32,7 @@ impl HtmlHelper {
     }
 
     pub fn str_member_list(toc: &mut String) -> String {
-        *toc += r#"<h4 class="heading4">Members</h4>"#;
+        *toc += r#"<h3 class="heading3">Members</h3>"#;
         r#"
 <h2 class="heading2">Members</h2>
 "#
@@ -58,14 +58,23 @@ impl HtmlHelper {
             id = uuid::Uuid::new_v4().to_string();
             name_for_toc = id.clone();
         }
-        *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name_for_toc.as_str()).as_str();
 
         let mut member_str = String::new();
         member_str += format!("<div class=\"member-item-container\" id=\"{}\">\n", id).as_str();
+        if let Some(name) = &member.name {
+            member_str += format!("<h3 class=\"heading3\">{}</h3>", name).as_str();
+            *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name.as_str()).as_str();
+        } else {
+            member_str += r#"<h3 class="heading3">MISSING_NAME</h3>"#;
+            *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), id.as_str()).as_str();
+        }
+        member_str += "\n";
+
         if let Some(declare) = &member.declare {
+            let trimmed_declare = declare.as_str().trim().trim_end_matches("{").trim();
             member_str += format!(
                 "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
-                HtmlHelper::preprocess_source(declare.as_str())
+                HtmlHelper::preprocess_source((trimmed_declare.to_string() + if trimmed_declare.chars().collect::<Vec<char>>()[trimmed_declare.len() - 1] != ';' { ";" } else { "" }).as_str())
             )
             .as_str();
         }
@@ -90,7 +99,7 @@ impl HtmlHelper {
     }
 
     pub fn str_method_list(toc: &mut String) -> String {
-        *toc += r#"<h4 class="heading4">Methods</h4>"#;
+        *toc += r#"<h3 class="heading3">Methods</h3>"#;
         r#"
 <h2 class="heading2">Methods</h2>
 "#
@@ -100,9 +109,7 @@ impl HtmlHelper {
     pub fn gen_method(method: &Method, toc: &mut String) -> (String, String) {
         let mut id = String::new();
         id += "f_";
-        let mut name_for_toc = String::new();
         if let Some(signature) = &method.signature {
-            name_for_toc = signature.clone();
             for c in signature.chars() {
                 if c.is_alphanumeric() {
                     id.push(c);
@@ -114,12 +121,18 @@ impl HtmlHelper {
             }
         } else {
             id = uuid::Uuid::new_v4().to_string();
-            name_for_toc = id.clone();
         }
-        *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name_for_toc.as_str()).as_str();
 
         let mut method_str = String::new();
         method_str += format!("<div id=\"{}\" class=\"method-item-container\">", id).as_str();
+        method_str += "\n";
+        if let Some(name) = &method.name {
+            method_str += format!("<h3 class=\"heading3\">{}</h3>", name).as_str();
+            *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), name.as_str()).as_str();
+        } else {
+            method_str += r#"<h3 class="heading3">MISSING_NAME</h3>"#;
+            *toc += HtmlHelper::gen_url(format!("#{}", id).as_str(), id.as_str()).as_str();
+        }
         method_str += "\n";
 
         if let Some(signature) = &method.signature {

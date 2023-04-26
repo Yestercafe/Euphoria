@@ -10,6 +10,7 @@ pub struct Method {
     pub params: Vec<Param>,
     pub has_ufunction: bool,
     pub signature: Option<String>,
+    pub name: Option<String>,
 }
 
 impl Debug for Method {
@@ -43,6 +44,7 @@ impl Method {
             returns: None,
             has_ufunction: false,
             params: vec![],
+            name: None,
         }
     }
 }

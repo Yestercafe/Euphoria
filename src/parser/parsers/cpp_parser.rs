@@ -126,8 +126,12 @@ impl CppParser {
 
         // declare part
         self.assert_i(i);
-        this_member.declare = Some(self.text[i].clone());
+        let raw_declare = self.text[i].clone();
+        this_member.declare = Some(raw_declare.clone());
         i += 1;
+        // parse member declaration into member name
+        let name = raw_declare.trim().trim_end_matches(";").trim_end_matches("{").trim().split_whitespace().last().unwrap().to_string();
+        this_member.name = Some(name);
 
         (i, this_member)
     }
@@ -187,7 +191,6 @@ impl CppParser {
 
         // signature of the method
         self.assert_i(i);
-
         if self.text[i].trim().starts_with("UFUNCTION") {
             this_method.has_ufunction = true;
             // TODO: record it has which properties
@@ -196,8 +199,13 @@ impl CppParser {
 
         // declare part
         self.assert_i(i);
-        this_method.signature = Some(self.text[i].clone());
+        let mut raw_signature = self.text[i].clone();
+        this_method.signature = Some(raw_signature.clone());
         i += 1;
+
+        // parse method signature into method name
+        let name = raw_signature.trim().split("(").collect::<Vec<&str>>()[0].trim().split_whitespace().collect::<Vec<&str>>().last().unwrap().to_string();
+        this_method.name = Some(name);
 
         (i, this_method)
     }

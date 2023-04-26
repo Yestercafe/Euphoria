@@ -5,6 +5,7 @@ pub struct Member {
     pub desc: Option<Desc>,
     pub has_uproperty: bool,
     pub declare: Option<String>,
+    pub name: Option<String>,
 }
 
 impl Member {
@@ -13,6 +14,7 @@ impl Member {
             desc: None,
             has_uproperty: false,
             declare: None,
+            name: None,
         }
     }
 }
