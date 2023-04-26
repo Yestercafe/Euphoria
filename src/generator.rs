@@ -125,9 +125,16 @@ impl Generator {
             // TODO: handle exceptions
             index_file.write(HtmlHelper::str_header().as_bytes());
 
+            let mut sorted_docs_map: Vec<(&String, &SHPair)> = vec![];
+
             for (k, v) in docs_map.iter() {
+                sorted_docs_map.push((&k, &v));
+            }
+
+            sorted_docs_map.sort_by(|a, b| a.0.cmp(b.0));
+            for (k, v) in sorted_docs_map.iter() {
                 index_file.write(
-                    HtmlHelper::gen_url((k.clone() + ".html").as_str(), k.as_str()).as_bytes(),
+                    HtmlHelper::gen_url((k.to_string() + ".html").as_str(), k.as_str()).as_bytes(),
                 );
             }
 
