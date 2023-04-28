@@ -3,3 +3,4 @@ pub mod class;
 pub mod r#enum;
 pub mod member;
 pub mod method;
+pub mod term_type;

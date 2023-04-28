@@ -1,5 +1,6 @@
 use crate::parser::components::desc::Desc;
 use std::fmt::{Debug, Formatter};
+use crate::parser::lang::any::Any;
 
 pub struct Member {
     pub desc: Option<Desc>,
@@ -16,6 +17,12 @@ impl Member {
             declare: None,
             name: None,
         }
+    }
+
+    pub fn from_any(any: Any) -> Self {
+        let mut this_member = Self::new();
+        this_member.desc = any.desc;
+        this_member
     }
 }
 

@@ -1,9 +1,12 @@
+use clap::arg;
 use crate::parser::components::desc::Desc;
 use crate::parser::components::param::Param;
 use crate::parser::components::returns::Returns;
+use crate::parser::lang::any::Any;
 use crate::parser::lang::member::Member;
 use crate::parser::lang::method::Method;
 use crate::parser::lang::r#enum::Enum;
+use crate::parser::lang::term_type::TermType;
 
 pub struct CppParser {
     text: Vec<String>,
@@ -38,35 +41,14 @@ impl CppParser {
         while i < self.text.len() {
             // Find beginning of Euphoria docs
             if self.text[i] == "/**" {
-                i += 1;
-
-                // detect type
-                if self.text[i].starts_with("* ") {
-                    let mut line = self.text[i].clone().split_off(2);
-
-                    // type identifier
-                    if line.starts_with("%") {
-                        match line.as_str() {
-                            "%member" => {
-                                let (next_i, new_member) = self.parse_member(i + 1);
-                                parsed.members.push(new_member);
-                                i = next_i - 1;
-                            }
-                            "%method" => {
-                                let (next_i, new_method) = self.parse_method(i + 1);
-                                parsed.methods.push(new_method);
-                                i = next_i - 1;
-                            }
-                            // TODO: more, for example: enum
-                            _ => {
-                                // panic!("PARSER_ERROR: At line {} in source file {}, type `{}` is not supported.", i + 1, self.source_path, line);
-                            }
-                        }
-                    } else {
-                        // TODO: parse any, convert to specific type at last
-                    }
-                } else {
-                    // TODO: curious part in docs, may do some process or panic?
+                let (next_i, new_any) = self.parse_any(i + 1);
+                i = next_i;
+                match new_any.term_type {
+                    TermType::Member => parsed = self.attach_member(parsed, new_any, i),
+                    TermType::Method => parsed = self.attach_method(parsed, new_any, i),
+                    TermType::Null => panic!("TermType::Null"),
+                    TermType::Undecidable => panic!("TermType::Undecidable"),
+                    _ => todo!(),
                 }
             }
             i += 1;
@@ -75,11 +57,10 @@ impl CppParser {
         parsed
     }
 
-    fn parse_member(&self, i: usize) -> (usize, Member) {
+    fn parse_any(&self, i: usize) -> (usize, Any) {
         let mut i = i;
-        let mut this_member = Member::new();
+        let mut this_any = Any::new();
 
-        // Euphoria docs part
         while i < self.text.len() {
             // the end of docs
             if self.text[i] == "*/" {
@@ -89,25 +70,79 @@ impl CppParser {
 
             if self.text[i].starts_with("* ") {
                 let line = self.text[i].clone().split_off(2);
-
                 if line.starts_with("@") {
-                    let sp: Vec<&str> = line.split_whitespace().collect();
-                    let car = sp.first().unwrap();
+                    let sp = line.split_once(" ");
+                    let mut instruction: Option<&str> = None;
+                    let mut arguments: Option<&str> = None;
 
-                    match *car {
-                        "@desc" | "@description" | "@brief" => {
-                            let (next_i, desc) = self.get_desc(i + 1);
-                            this_member.desc = Some(desc);
-                            // next_i is the next line of the desc, -1 here, and +1 later,
-                            // can be back to the right point
-                            i = next_i - 1;
-                        }
-                        _ => {
-                            self.panic_at_i(i);
-                        }
+                    if let Some((car, cdr)) = sp {
+                        instruction = Some(car);
+                        arguments = Some(cdr);
+                    } else {
+                        instruction = Some(&line);
                     }
-                } else {
-                    self.panic_at_i(i);
+
+                    if let Some(instruction) = instruction {
+                        match instruction {
+                            "@brief" | "@desc" | "@description" => {
+                                let (next_i, mut desc) = self.get_desc(i + 1);
+                                if let Some(arguments) = arguments {
+                                    if desc.description.len() == 0 {
+                                        desc.description = arguments.trim().to_string();
+                                    } else {
+                                        desc.description = arguments.trim().to_string() + "\n" + desc.description.as_str();
+                                    }
+                                }
+                                this_any.desc = Some(desc);
+                                i = next_i - 1;
+                            }
+                            "@returns" | "@return" => {
+                                let (next_i, mut returns) = self.get_returns(i + 1);
+                                if let Some(arguments) = arguments {
+                                    if let Some(desc) = returns.desc {
+                                        if desc.description.len() == 0 {
+                                            returns.desc = Some(Desc::new(arguments.trim().to_string()));
+                                        } else {
+                                            let mut new_desc = Desc::new(arguments.trim().to_string() + "\n" + desc.description.as_str());
+                                            new_desc.description = new_desc.description.trim().to_string();
+                                            returns.desc = Some(new_desc);
+                                        }
+                                    } else {
+                                        returns.desc = Some(Desc::new(arguments.trim().to_string()));
+                                    }
+                                }
+                                this_any.returns = Some(returns);
+                                i = next_i - 1;
+                            }
+                            "@param" | "@parameter" => {
+                                let (next_i, mut param) = self.get_param(i + 1);
+                                if let Some(arguments) = arguments {
+                                    let arg0s = arguments.split_once(" ");
+                                    if let Some((arg0, arg1)) = arg0s {
+                                        param.name = Some(arg0.trim().to_string());
+                                        if let Some(desc) = param.desc {
+                                            if desc.description.len() == 0 {
+                                                param.desc = Some(Desc::new(arg1.trim().to_string()));
+                                            } else {
+                                                let mut new_desc = Desc::new(arg1.trim().to_string() + "\n" + desc.description.as_str());
+                                                new_desc.description = new_desc.description.trim().to_string();
+                                                param.desc = Some(new_desc);
+                                            }
+                                        } else {
+                                            param.desc = Some(Desc::new(arg1.trim().to_string()));
+                                        }
+                                    } else {
+                                        param.name = Some(arguments.trim().to_string());
+                                    }
+                                }
+                                this_any.params.push(param);
+                                i = next_i - 1;
+                            }
+                            _ => self.panic_at_i(i),
+                        }
+                    } else {
+                        panic!("Never reach")
+                    }
                 }
             } else {
                 // TODO: curious part in docs, may do some process or panic?
@@ -116,15 +151,34 @@ impl CppParser {
             i += 1;
         }
 
-        // UPROPERTY part
+        // Detect term types
+        self.assert_i(i);
+        if self.text[i].trim().starts_with("UFUNCTION") {
+            this_any.term_type = TermType::Method;
+        } else if self.text[i].trim().starts_with("UPROPERTY") {
+            this_any.term_type = TermType::Member;
+        } else {
+            if self.text[i].trim().trim_end_matches(";").trim().trim_end_matches("const").trim().chars().last().unwrap() == ')' {
+                this_any.term_type = TermType::Method;
+            } else {
+                this_any.term_type = TermType::Member;
+            }
+        }
+        // Do not increase `i`, postprocess in attach_*
+
+        (i, this_any)
+    }
+
+    fn attach_member(&self, parsed: Parsed, this_any: Any, i: usize) -> Parsed {
+        let mut parsed = parsed;
+        let mut i = i;
+        let mut this_member = Member::from_any(this_any);
+
         self.assert_i(i);
         if self.text[i].trim().starts_with("UPROPERTY") {
             this_member.has_uproperty = true;
-            // TODO: record it has which properties
             i += 1;
         }
-
-        // declare part
         self.assert_i(i);
         let raw_declare = self.text[i].clone();
         this_member.declare = Some(raw_declare.clone());
@@ -141,76 +195,24 @@ impl CppParser {
             .to_string();
         this_member.name = Some(name);
 
-        (i, this_member)
+        parsed.members.push(this_member);
+        parsed
     }
 
-    fn parse_method(&self, i: usize) -> (usize, Method) {
+    fn attach_method(&self, parsed: Parsed, this_any: Any, i: usize) -> Parsed {
+        let mut parsed = parsed;
         let mut i = i;
-        let mut this_method = Method::new();
+        let mut this_method = Method::from_any(this_any);
 
-        while i < self.text.len() {
-            // the end of docs
-            if self.text[i] == "*/" {
-                i += 1;
-                break;
-            }
-
-            if self.text[i].starts_with("* ") {
-                let line = self.text[i].clone().split_off(2);
-
-                // component
-                if line.starts_with("@") {
-                    // sp is the argument list of component
-                    let sp: Vec<&str> = line.split_whitespace().collect();
-                    let car = sp.first().unwrap();
-
-                    match *car {
-                        "@desc" | "@description" | "@brief" => {
-                            let (next_i, desc) = self.get_desc(i + 1);
-                            this_method.desc = Some(desc);
-                            i = next_i - 1;
-                        }
-                        "@returns" | "@return" => {
-                            let (next_i, returns) = self.get_returns(i + 1);
-                            this_method.returns = Some(returns);
-                            i = next_i - 1;
-                        }
-                        "@param" | "@parameter" => {
-                            let (next_i, mut param) = self.get_param(i + 1);
-                            if sp.len() >= 2 {
-                                param.name = Some(sp[1].to_string());
-                            }
-                            this_method.params.push(param);
-                            i = next_i - 1;
-                        }
-                        _ => {
-                            self.panic_at_i(i);
-                        }
-                    }
-                } else {
-                    self.panic_at_i(i);
-                }
-            } else {
-                // TODO: curious part in docs, may do some process or panic?
-            }
-
-            i += 1;
-        }
-
-        // signature of the method
         self.assert_i(i);
         if self.text[i].trim().starts_with("UFUNCTION") {
             this_method.has_ufunction = true;
-            // TODO: record it has which properties
             i += 1;
         }
-
-        // declare part
         self.assert_i(i);
         let mut raw_signature = self.text[i].clone();
         this_method.signature = Some(raw_signature.clone());
         i += 1;
-
         // parse method signature into method name
         let name = raw_signature.trim().split("(").collect::<Vec<&str>>()[0]
             .trim()
@@ -221,7 +223,8 @@ impl CppParser {
             .to_string();
         this_method.name = Some(name);
 
-        (i, this_method)
+        parsed.methods.push(this_method);
+        parsed
     }
 
     fn assert_i(&self, i: usize) {

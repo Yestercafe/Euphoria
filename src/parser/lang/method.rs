@@ -2,6 +2,7 @@ use crate::parser::components::desc::Desc;
 use crate::parser::components::param::Param;
 use crate::parser::components::returns::Returns;
 use std::fmt::{Debug, Formatter, Write};
+use crate::parser::lang::any::Any;
 
 #[derive(Clone)]
 pub struct Method {
@@ -39,12 +40,20 @@ impl Debug for Method {
 impl Method {
     pub fn new() -> Self {
         Self {
-            signature: None,
             desc: None,
             returns: None,
             has_ufunction: false,
             params: vec![],
+            signature: None,
             name: None,
         }
+    }
+
+    pub fn from_any(any: Any) -> Self {
+        let mut this_method = Self::new();
+        this_method.desc = any.desc;
+        this_method.returns = any.returns;
+        this_method.params = any.params;
+        this_method
     }
 }
