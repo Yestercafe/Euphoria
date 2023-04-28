@@ -180,19 +180,41 @@ impl CppParser {
             i += 1;
         }
         self.assert_i(i);
-        let raw_declare = self.text[i].clone();
+        let mut raw_declare = self.text[i].clone();
+        let mut first_line = self.text[i].clone();
+        let mut depth = 0;
+        let TAB = "    ";
+        while raw_declare.trim_end().chars().last().unwrap() != ';' {
+            if self.text[i].trim().chars().last().unwrap() == '{' {
+                depth += 1;
+            }
+
+            i += 1;
+
+            if self.text[i].trim().chars().nth(0).unwrap() == '}' {
+                depth -= 1;
+            }
+
+            self.assert_i(i);
+            raw_declare.push('\n');
+            for _ in 0..depth {
+                raw_declare += TAB;
+            }
+            raw_declare += self.text[i].as_str();
+        }
         this_member.declare = Some(raw_declare.clone());
         i += 1;
         // parse member declaration into member name
-        let name = raw_declare
+        let mut prefix = first_line
             .trim()
             .trim_end_matches(";")
             .trim_end_matches("{")
-            .trim()
-            .split_whitespace()
-            .last()
-            .unwrap()
-            .to_string();
+            .trim();
+        let sp_eq = prefix.split_once("=");
+        if let Some((sp0, sp1)) = sp_eq {
+            prefix = sp0;
+        }
+        let name = prefix.trim().split_whitespace().last().unwrap().to_string();
         this_member.name = Some(name);
 
         parsed.members.push(this_member);

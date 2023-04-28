@@ -71,25 +71,12 @@ impl HtmlHelper {
         member_str += "\n";
 
         if let Some(declare) = &member.declare {
-            let trimmed_declare = declare.as_str().trim().trim_end_matches("{").trim();
-
             let mut source = String::new();
             if let Some(uproperty) = &member.uproperty {
                 source += uproperty.as_str();
                 source.push('\n');
             }
-            source += HtmlHelper::preprocess_source(
-                    (trimmed_declare.to_string()
-                        + if trimmed_declare.chars().collect::<Vec<char>>()
-                        [trimmed_declare.len() - 1]
-                        != ';'
-                    {
-                        ";"
-                    } else {
-                        ""
-                    })
-                        .as_str()
-                ).as_str();
+            source += HtmlHelper::preprocess_source(declare).as_str();
 
             member_str += format!(
                 "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
@@ -156,7 +143,7 @@ impl HtmlHelper {
                 source += ufunction.as_str();
                 source.push('\n');
             }
-            source += signature;
+            source += HtmlHelper::preprocess_source(signature).as_str();
             method_str += format!(
                 "<pre class=\"method-signature-container\">\n<code>{}</code>\n</pre>",
                 source
