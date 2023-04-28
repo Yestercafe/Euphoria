@@ -9,7 +9,7 @@ pub struct Method {
     pub desc: Option<Desc>,
     pub returns: Option<Returns>,
     pub params: Vec<Param>,
-    pub has_ufunction: bool,
+    pub ufunction: Option<String>,
     pub signature: Option<String>,
     pub name: Option<String>,
 }
@@ -42,7 +42,7 @@ impl Method {
         Self {
             desc: None,
             returns: None,
-            has_ufunction: false,
+            ufunction: None,
             params: vec![],
             signature: None,
             name: None,

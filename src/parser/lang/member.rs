@@ -4,7 +4,7 @@ use crate::parser::lang::any::Any;
 
 pub struct Member {
     pub desc: Option<Desc>,
-    pub has_uproperty: bool,
+    pub uproperty: Option<String>,
     pub declare: Option<String>,
     pub name: Option<String>,
 }
@@ -13,7 +13,7 @@ impl Member {
     pub fn new() -> Self {
         Self {
             desc: None,
-            has_uproperty: false,
+            uproperty: None,
             declare: None,
             name: None,
         }
@@ -31,7 +31,9 @@ impl Debug for Member {
         if let Some(desc) = &self.desc {
             f.write_str(format!("desc: {:?}\n", desc).as_str())?;
         }
-        f.write_str(format!("has_uproperty: {}\n", self.has_uproperty).as_str())?;
+        if let Some(u) = &self.uproperty {
+            f.write_str(format!("uproperty: {}\n", u).as_str())?;
+        }
         if let Some(declare) = &self.declare {
             f.write_str(format!("declare: {:?}\n", declare).as_str())?;
         }

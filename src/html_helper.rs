@@ -72,28 +72,32 @@ impl HtmlHelper {
 
         if let Some(declare) = &member.declare {
             let trimmed_declare = declare.as_str().trim().trim_end_matches("{").trim();
-            member_str += format!(
-                "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
-                HtmlHelper::preprocess_source(
+
+            let mut source = String::new();
+            if let Some(uproperty) = &member.uproperty {
+                source += uproperty.as_str();
+                source.push('\n');
+            }
+            source += HtmlHelper::preprocess_source(
                     (trimmed_declare.to_string()
                         + if trimmed_declare.chars().collect::<Vec<char>>()
-                            [trimmed_declare.len() - 1]
-                            != ';'
-                        {
-                            ";"
-                        } else {
-                            ""
-                        })
-                    .as_str()
-                )
+                        [trimmed_declare.len() - 1]
+                        != ';'
+                    {
+                        ";"
+                    } else {
+                        ""
+                    })
+                        .as_str()
+                ).as_str();
+
+            member_str += format!(
+                "<pre class=\"member-declare-container\">\n<code>{}</code>\n</pre>\n",
+                source,
             )
             .as_str();
         }
-        member_str += format!(
-            "<p class=\"member-uproperty\">It is{} a UPROPERTY.</p>\n",
-            if member.has_uproperty { "" } else { " not" }
-        )
-        .as_str();
+
         if let Some(desc) = &member.desc {
             member_str += r#"<div class="member-desc-container">"#;
             member_str += "\n";
@@ -147,18 +151,18 @@ impl HtmlHelper {
         method_str += "\n";
 
         if let Some(signature) = &method.signature {
+            let mut source = String::new();
+            if let Some(ufunction) = &method.ufunction {
+                source += ufunction.as_str();
+                source.push('\n');
+            }
+            source += signature;
             method_str += format!(
                 "<pre class=\"method-signature-container\">\n<code>{}</code>\n</pre>",
-                HtmlHelper::preprocess_source(signature)
+                source
             )
             .as_str();
         }
-
-        method_str += format!(
-            "<p class=\"method-ufunction\">It is{} a UFUNCTION.</p>\n",
-            if method.has_ufunction { "" } else { " not" }
-        )
-        .as_str();
 
         if let Some(desc) = &method.desc {
             method_str += r#"<div class="method-desc-container">"#;

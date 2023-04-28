@@ -176,7 +176,7 @@ impl CppParser {
 
         self.assert_i(i);
         if self.text[i].trim().starts_with("UPROPERTY") {
-            this_member.has_uproperty = true;
+            this_member.uproperty = Some(self.text[i].trim().to_string());
             i += 1;
         }
         self.assert_i(i);
@@ -206,7 +206,7 @@ impl CppParser {
 
         self.assert_i(i);
         if self.text[i].trim().starts_with("UFUNCTION") {
-            this_method.has_ufunction = true;
+            this_method.ufunction = Some(self.text[i].trim().to_string());
             i += 1;
         }
         self.assert_i(i);
